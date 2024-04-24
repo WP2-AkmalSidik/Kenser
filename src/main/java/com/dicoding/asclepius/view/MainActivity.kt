@@ -9,7 +9,9 @@ import com.dicoding.asclepius.databinding.ActivityMainBinding
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import com.dicoding.asclepius.helper.ImageClassifierHelper
+import com.soundcloud.android.crop.Crop
 import org.tensorflow.lite.task.vision.classifier.Classifications
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
@@ -21,7 +23,7 @@ class MainActivity : AppCompatActivity() {
     ) { uri: Uri? ->
         if (uri != null) {
             currentImageUri = uri
-            showImage()
+            cropImage(uri)
         } else {
             Toast.makeText(this, "No media selected", Toast.LENGTH_SHORT).show()
         }
@@ -41,11 +43,20 @@ class MainActivity : AppCompatActivity() {
         pickMediaLauncher.launch(request)
     }
 
-    private fun showImage() {
-        currentImageUri?.let { uri ->
-            binding.previewImageView.setImageURI(uri)
-        } ?: run {
-            Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show()
+    private fun cropImage(uri: Uri) {
+        Crop.of(uri, Uri.fromFile(File(cacheDir, "cropped")))
+            .asSquare()
+            .start(this)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == Crop.REQUEST_CROP && resultCode == RESULT_OK) {
+            val croppedUri = Crop.getOutput(data)
+            if (croppedUri != null) {
+                binding.previewImageView.setImageURI(croppedUri)
+                currentImageUri = croppedUri
+            }
         }
     }
 

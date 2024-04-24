@@ -11,7 +11,10 @@ import org.tensorflow.lite.task.vision.classifier.Classifications
 import org.tensorflow.lite.task.vision.classifier.ImageClassifier
 
 
-class ImageClassifierHelper(private val context: Context, private val classifierListener: ClassifierListener?) {
+class ImageClassifierHelper(
+    private val context: Context,
+    private val classifierListener: ClassifierListener?
+) {
 
     private var imageClassifier: ImageClassifier? = null
 
