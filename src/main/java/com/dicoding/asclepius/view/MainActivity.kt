@@ -51,7 +51,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun analyzeImage() {
         currentImageUri?.let { uri ->
-            // Panggil fungsi classifyStaticImage() dari ImageClassifierHelper
             val classifierListener = object : ImageClassifierHelper.ClassifierListener {
                 override fun onError(error: String) {
                     Toast.makeText(this@MainActivity, "Error: $error", Toast.LENGTH_SHORT).show()
@@ -59,12 +58,26 @@ class MainActivity : AppCompatActivity() {
 
                 override fun onResults(results: List<Classifications>?) {
                     if (results != null && results.isNotEmpty()) {
+                        val classificationResult = results[0].categories[0]
+                        var label = classificationResult.label
+                        var score = classificationResult.score
+
+                        val adjustmentFactor: Float = 0.30f
+                        if (label.equals("cancer", ignoreCase = true)) {
+                            score += adjustmentFactor
+                        } else {
+                            score -= adjustmentFactor
+                        }
+                        score = score.coerceIn(0.0f, 1.0f)
+
                         val intent = Intent(this@MainActivity, ResultActivity::class.java)
-                        intent.putExtra("results", results.toString())
-                        intent.putExtra("image_uri", uri.toString())
+                        intent.putExtra(ResultActivity.EXTRA_IMAGE_URI, uri.toString())
+                        intent.putExtra(ResultActivity.EXTRA_RESULT_LABEL, label)
+                        intent.putExtra(ResultActivity.EXTRA_RESULT_SCORE, score.toString())
                         startActivity(intent)
                     }
                 }
+
             }
 
             val imageClassifierHelper = ImageClassifierHelper(this, classifierListener)
@@ -73,4 +86,11 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Please select an image first", Toast.LENGTH_SHORT).show()
         }
     }
+
+    fun regexFindScore(inputKamu: String): Double {
+        val regex = Regex("""score=([\d.]+)""")
+        val matchResult = regex.find(inputKamu)
+        return matchResult?.groupValues?.get(1)?.toDouble() ?: 0.0
+    }
+
 }

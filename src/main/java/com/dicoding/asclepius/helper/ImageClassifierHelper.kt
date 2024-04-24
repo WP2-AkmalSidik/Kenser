@@ -22,8 +22,8 @@ class ImageClassifierHelper(private val context: Context, private val classifier
     private fun setupImageClassifier() {
         try {
             val options = ImageClassifier.ImageClassifierOptions.builder()
-                .setScoreThreshold(0.5f) // Tentukan threshold confidence
-                .setMaxResults(3) // Tentukan jumlah hasil maksimum
+                .setScoreThreshold(0.1f)
+                .setMaxResults(3)
                 .build()
 
             imageClassifier = ImageClassifier.createFromFileAndOptions(
@@ -42,7 +42,7 @@ class ImageClassifierHelper(private val context: Context, private val classifier
             setupImageClassifier()
         }
 
-        val imageBitmap: Bitmap? = uriToBitmap(context, imageUri) // Convert URI to Bitmap
+        val imageBitmap: Bitmap? = uriToBitmap(context, imageUri)
         if (imageBitmap == null) {
             classifierListener?.onError("Failed to load image.")
             return
